@@ -2,7 +2,7 @@ import React from "react";
 
 export default function PricingCard({ title, price, benefits}) {
     return (
-    <div className="bg-slate-900 border border-slate-800 p-8 rounded-2xl text-center shadow-lg hover:border-amber-500 transition">
+    <div className="bg-slate-900 border border-slate-800 p-8 rounded-2xl text-center shadow-lg hover:border-amber-500 transition hover:scale-105">
         <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
         <p className="text-4xl font-extrabold text-amber-500 mb-6">{price}</p>
         <ul>

@@ -1,0 +1,11 @@
+.title{
+    animation: title 1s ease-in-out 100ms 1;
+}
+@keyframes title {
+    0%{
+        transform: translateY(-100px);
+    }
+    100%{
+        transform: translateX(0);
+    }
+}
