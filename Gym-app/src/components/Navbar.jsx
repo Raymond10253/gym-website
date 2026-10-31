@@ -16,6 +16,7 @@ export default function Navbar() {
                         <a href="#membership" className='hover:text-amber-400 transition duration-500 hover:scale-110'>Membership & Pricing</a>
                         <a href="#booking" className='hover:text-amber-400 transition duration-500 hover:scale-110'>Book</a>
                         <a href="#contact" className='hover:text-amber-400 transition duration-500 hover:scale-110'>Contact</a>
+                        <a href="/admin" className='hover:text-amber-400 transition duration-500 hover:scale-110'>Admin</a>
                     </div>
                     <div className='md:hidden'>
                         <button 
@@ -34,6 +35,7 @@ export default function Navbar() {
                     <a href="#membership" className='block hover:text-amber-400 transition-all duration-500'>Membership & Pricing</a>
                     <a href="#booking" className='block hover:text-amber-400 transition-all duration-500'>Book</a>
                     <a href="#contact" className='block hover:text-amber-400 transition-all duration-500'>Contact</a>
+                    <a href="/admin" className='block hover:text-amber-400 transition-all duration-500 uppercase font-bold'>Admin</a>
                 </div>
             )}
         </nav>

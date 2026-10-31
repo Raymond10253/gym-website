@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { saveBooking } from "../services/submissionStorage";
 
 const initialFormData = {
     name: '',
@@ -13,6 +14,7 @@ export default function BookingForm() {
     const [formData, setFormData] = useState(initialFormData);
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [submitError, setSubmitError] = useState("");
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -23,10 +25,15 @@ export default function BookingForm() {
         e.preventDefault();
         setLoading(true);
 
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            saveBooking(formData);
             setSubmitted(true);
-        }, 1000);
+            setSubmitError("");
+        } catch (error) {
+            setSubmitError(error instanceof Error ? error.message : "Unable to save your booking.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const resetBooking = () => {
@@ -64,6 +71,7 @@ export default function BookingForm() {
                         <p className="text-gray-400 mt-2">Pick a date and time that works for you, and let our expert trainers guide your first step</p>
                     </div>
                     <form onSubmit={handleSubmit} className="max-w-7xl mx-auto space-y-4">
+                        {submitError && <p role="alert" className="text-sm text-red-400">{submitError}</p>}
                         <div>
                             <label htmlFor="name" className="block text-slate-200 mb-2">Name</label>
                             <input

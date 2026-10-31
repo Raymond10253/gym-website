@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import { saveContact } from "../services/submissionStorage";
 
 const data = {
     subject: '',
@@ -11,15 +12,21 @@ export default function Contact() {
     const [contactData, setContactData] = useState(data);
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [submitError, setSubmitError] = useState("");
 
     const handleSubmit = (e) => {
         e.preventDefault()
         setLoading(true);
 
-        setTimeout(() => {
+        try {
+            saveContact(contactData);
             setSubmitted(true);
-            setLoading(false)
-        }, 1000);
+            setSubmitError("");
+        } catch (error) {
+            setSubmitError(error instanceof Error ? error.message : "Unable to save your message.");
+        } finally {
+            setLoading(false);
+        }
     }
 
     
@@ -36,7 +43,8 @@ export default function Contact() {
                         <h3 className="text-md text-green p-3 rounded-xl bg-green/50">Your message about {contactData.subject} has reached us. Kindky wait for a moment we will get back at you.</h3>
                     </div>
                 ) : (
-                  <form action="" onSubmit={handleSubmit} className="space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {submitError && <p role="alert" className="text-sm text-red-400">{submitError}</p>}
                     <div>
                         <label htmlFor="subject" className="block my-2 font-bold">SUBJECT</label>
                         <input 
