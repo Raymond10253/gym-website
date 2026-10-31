@@ -5,6 +5,7 @@ import BookingForm from './components/BookingForm'
 import PricingCard from './components/PricingCard'
 import Programs from './pages/Programs'
 import Membership from './components/Membership'
+import Contact from './pages/Contact'
 
 
 export default function App() {
@@ -20,8 +21,8 @@ export default function App() {
         <Hero />
         <Programs />
         <Membership />
-        
         <BookingForm />
+        <Contact />
       </div>
     </>
   )
