@@ -1,222 +1,234 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {
-  deleteBooking as removeBooking,
-  deleteContact as removeContact,
-  getBookings,
-  getContacts,
-} from '../services/submissionStorage';
-
-const ADMIN_PASSWORD = 'r10253rw';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('bookings');
-  const [password, setPassword] = useState('');
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [error, setError] = useState('');
-
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault();
-
-    if (password === ADMIN_PASSWORD) {
-      setIsUnlocked(true);
-      setError('');
-      return;
-    }
-
-    setError('Wrong password. Try again!');
-    setPassword('');
-  };
-
-  
-
   const [bookings, setBookings] = useState([]);
   const [contacts, setContacts] = useState([]);
-  const [dataError, setDataError] = useState('');
+  const [password, setPassword] = useState('');
+  const [token, setToken] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const loadSubmissions = () => {
+    if (!token) return;
+
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      setError('');
+
       try {
-        setBookings(getBookings());
-        setContacts(getContacts());
-        setDataError('');
-      } catch (loadError) {
-        setDataError(
-          loadError instanceof Error ? loadError.message : 'Unable to load saved submissions.',
-        );
+        const headers = { Authorization: `Bearer ${token}` };
+        const [bookingsRes, contactsRes] = await Promise.all([
+          axios.get('/api/bookings', { headers }),
+          axios.get('/api/contacts', { headers }),
+        ]);
+        setBookings(bookingsRes.data);
+        setContacts(contactsRes.data);
+      } catch (err) {
+        console.error(err);
+        setError(err.response?.data?.error || 'Failed to load dashboard data. Please try again later.');
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadSubmissions();
-    window.addEventListener('gym-data-updated', loadSubmissions);
-    window.addEventListener('storage', loadSubmissions);
+    fetchDashboardData();
+  }, [token]);
 
-    return () => {
-      window.removeEventListener('gym-data-updated', loadSubmissions);
-      window.removeEventListener('storage', loadSubmissions);
-    };
-  }, []);
+  const handlePasswordSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
 
-  const handleDeleteBooking = (id) => {
     try {
-      removeBooking(id);
-    } catch (deleteError) {
-      setDataError(
-        deleteError instanceof Error ? deleteError.message : 'Unable to delete this booking.',
-      );
+      const response = await axios.post('/api/admin/login', { password });
+      setToken(response.data.token);
+      setPassword('');
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.error || 'Unable to sign in. Please try again later.');
+      setPassword('');
     }
   };
 
-  const handleDeleteContact = (id) => {
+  const handleLogout = () => {
+    setToken('');
+    setBookings([]);
+    setContacts([]);
+  };
+
+  const handleDeleteBooking = async (id) => {
     try {
-      removeContact(id);
-    } catch (deleteError) {
-      setDataError(
-        deleteError instanceof Error ? deleteError.message : 'Unable to delete this message.',
-      );
+      await axios.delete(`/api/bookings/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setBookings((previousBookings) => previousBookings.filter((booking) => booking.id !== id));
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.error || 'Failed to delete booking. Please try again later.');
     }
   };
-if (!isUnlocked) {
-  return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
-        <form
-          onSubmit={handlePasswordSubmit}
-          className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-2xl"
-        >
-          <h2 className="mb-2 text-2xl font-bold text-white">Admin Access</h2>
-          <p className="mb-6 text-sm text-slate-400">Enter the password to continue.</p>
 
-          <label className="mb-2 block text-sm font-medium text-slate-300" htmlFor="admin-password">
-            Password
-          </label>
-          <input
-            id="admin-password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none ring-0 placeholder:text-slate-500 focus:border-amber-500"
-            placeholder="Enter password"
-          />
+  const handleDeleteContact = async (id) => {
+    try {
+      await axios.delete(`/api/contacts/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setContacts((previousContacts) => previousContacts.filter((contact) => contact.id !== id));
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.error || 'Failed to delete contact message. Please try again later.');
+    }
+  };
 
-          {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
-
-          <button
-            type="submit"
-            className="mt-6 w-full rounded-xl bg-amber-500 px-4 py-3 font-semibold text-slate-950 transition hover:bg-amber-400"
-          >
-            Unlock Dashboard
-          </button>
-        </form>
-      </div>
-    );
-}
-
-return (
-    <section className="py-16 px-4 max-w-7xl mx-auto min-h-screen text-white">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b border-slate-800 pb-6 gap-4">
-        <div>
-          <span className="text-amber-500 font-semibold uppercase tracking-widest text-sm">🔒 Management Portal</span>
-          <h1 className="text-3xl font-extrabold mt-1">Admin Dashboard</h1>
-          <a href="/" className="mt-2 inline-block text-sm text-amber-400 hover:text-amber-300">Back to website</a>
+  if (!token) {
+    return (
+      <section className="min-h-screen px-4 py-32 text-white">
+        <div className="mx-auto max-w-md rounded-3xl border border-slate-800 bg-slate-900 p-8 shadow-2xl sm:p-12">
+          <h1 className="mb-4 text-2xl font-bold">Admin Login</h1>
+          {error && (
+            <div className="mb-6 rounded-xl border border-red-500/50 bg-red-950/50 p-4 text-center text-sm text-red-300">
+              {error}
+            </div>
+          )}
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="admin-password" className="my-2 block font-bold">Password</label>
+              <input
+                id="admin-password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 p-3 text-white"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full rounded-lg bg-amber-500 p-3 font-bold text-slate-950 transition hover:bg-amber-400"
+            >
+              Sign in
+            </button>
+          </form>
         </div>
-        <div className="flex space-x-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800 w-full justify-center md:justify-end md:w-[400px]">
-          <button 
+      </section>
+    );
+  }
+
+  if (loading) {
+    return <div className="py-32 text-center text-xl text-white">Loading dashboard data...</div>;
+  }
+
+  return (
+    <section className="mx-auto min-h-screen max-w-7xl px-4 py-16 text-white">
+      <div className="mb-10 flex flex-col items-start justify-between gap-4 border-b border-slate-800 pb-6 md:flex-row md:items-center">
+        <div>
+          <span className="text-sm font-semibold uppercase tracking-widest text-amber-500">Management Portal</span>
+          <h1 className="mt-1 text-3xl font-extrabold">Admin Dashboard</h1>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 p-1.5">
+          <button
             onClick={() => setActiveTab('bookings')}
-            className={`px-6 py-2 rounded-lg font-medium text-sm transition ${activeTab === 'bookings' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-gray-400 hover:text-white'}`}
+            className={`rounded-lg px-6 py-2 text-sm font-medium transition duration-300 ${activeTab === 'bookings' ? 'bg-amber-500 text-slate-950' : 'text-white hover:bg-amber-400/20'}`}
           >
             Trial Bookings ({bookings.length})
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('contacts')}
-            className={`px-6 py-2 rounded-lg font-medium text-sm transition ${activeTab === 'contacts' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-gray-400 hover:text-white'}`}
+            className={`rounded-lg px-6 py-2 text-sm font-medium transition duration-300 ${activeTab === 'contacts' ? 'bg-amber-500 text-slate-950' : 'text-white hover:bg-amber-400/20'}`}
           >
             Contact Messages ({contacts.length})
+          </button>
+          <button
+            onClick={handleLogout}
+            className="rounded-lg px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-800"
+          >
+            Log out
           </button>
         </div>
       </div>
 
-      {dataError && <p role="alert" className="mb-4 text-sm text-red-400">{dataError}</p>}
+      {error && (
+        <div className="mb-6 rounded-xl border border-red-500/50 bg-red-950/50 p-4 text-center text-sm text-red-300">
+          {error}
+        </div>
+      )}
 
       {activeTab === 'bookings' ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-6 border-b border-slate-800">
-            <h2 className="text-xl font-bold">Free Trial Sign-ups</h2>
-            <p className="text-gray-400 text-sm">Review users who have booked trial coaching sessions.</p>
-          </div>
+        <div className="rounded-3xl border border-slate-800 bg-slate-900 p-8 shadow-2xl sm:p-12">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <h2 className="mb-4 text-2xl font-bold">Trial Bookings</h2>
+            <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="bg-slate-950 text-gray-400 text-xs uppercase tracking-wider border-b border-slate-800">
-                  <th className="p-4">Name</th>
-                  <th className="p-4">Contact Info</th>
-                  <th className="p-4">Goal</th>
-                  <th className="p-4">Date & Time</th>
-                  <th className="p-4 text-right">Actions</th>
+                <tr>
+                  <th className="p-4 text-sm font-semibold text-slate-400">Name</th>
+                  <th className="p-4 text-sm font-semibold text-slate-400">Email</th>
+                  <th className="p-4 text-sm font-semibold text-slate-400">Phone</th>
+                  <th className="p-4 text-sm font-semibold text-slate-400">Date</th>
+                  <th className="p-4 text-sm font-semibold text-slate-400">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-sm">
-                {bookings.length === 0 ? (
-                  <tr><td colSpan="5" className="p-6 text-center text-gray-500">No booking requests found.</td></tr>
-                ) : (
-                  bookings.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-850 transition">
-                      <td className="p-4 font-semibold text-white">{item.name}</td>
-                      <td className="p-4 text-gray-300">
-                        <div>{item.email}</div>
-                        <div className="text-xs text-gray-500">{item.phone}</div>
-                      </td>
-                      <td className="p-4"><span className="bg-amber-500/10 text-amber-400 px-3 py-1 rounded-full text-xs font-semibold">{item.goal}</span></td>
-                      <td className="p-4 text-gray-300">{item.date} at <span className="text-amber-400 font-medium">{item.time}</span></td>
-                      <td className="p-4 text-right">
-                        <button 
-                          onClick={() => handleDeleteBooking(item.id)}
-                          className="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+              <tbody>
+                {bookings.map((booking) => (
+                  <tr key={booking.id} className="border-t border-slate-800">
+                    <td className="p-4">{booking.name}</td>
+                    <td className="p-4">{booking.email}</td>
+                    <td className="p-4">{booking.phone}</td>
+                    <td className="p-4">{booking.date}</td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => handleDeleteBooking(booking.id)}
+                        className="text-red-300 hover:text-red-200"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {bookings.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="p-4 text-center text-slate-400">No trial bookings yet.</td>
+                  </tr>
                 )}
               </tbody>
             </table>
           </div>
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-6 border-b border-slate-800">
-            <h2 className="text-xl font-bold">Inbound Contact Messages</h2>
-            <p className="text-gray-400 text-sm">Review inquiries sent through the website contact form.</p>
-          </div>
+        <div className="rounded-3xl border border-slate-800 bg-slate-900 p-8 shadow-2xl sm:p-12">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <h2 className="mb-4 text-2xl font-bold">Contact Messages</h2>
+            <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="bg-slate-950 text-gray-400 text-xs uppercase tracking-wider border-b border-slate-800">
-                  <th className="p-4">Subject</th>
-                  <th className="p-4">Message</th>
-                  <th className="p-4">Received</th>
-                  <th className="p-4 text-right">Actions</th>
+                <tr>
+                  <th className="p-4 text-sm font-semibold text-slate-400">Name</th>
+                  <th className="p-4 text-sm font-semibold text-slate-400">Email</th>
+                  <th className="p-4 text-sm font-semibold text-slate-400">Message</th>
+                  <th className="p-4 text-sm font-semibold text-slate-400">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-sm">
-                {contacts.length === 0 ? (
-                  <tr><td colSpan="4" className="p-6 text-center text-gray-500">No contact messages found.</td></tr>
-                ) : (
-                  contacts.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-850 transition">
-                      <td className="p-4 font-semibold text-white">{item.subject}</td>
-                      <td className="p-4 text-gray-300 max-w-xs">{item.message}</td>
-                      <td className="p-4 text-gray-400">{item.createdAt ? new Date(item.createdAt).toLocaleString() : '—'}</td>
-                      <td className="p-4 text-right">
-                        <button 
-                          onClick={() => handleDeleteContact(item.id)}
-                          className="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+              <tbody>
+                {contacts.map((contact) => (
+                  <tr key={contact.id} className="border-t border-slate-800">
+                    <td className="p-4">{contact.name}</td>
+                    <td className="p-4">{contact.email}</td>
+                    <td className="p-4">{contact.message}</td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => handleDeleteContact(contact.id)}
+                        className="text-red-300 hover:text-red-200"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {contacts.length === 0 && (
+                  <tr>
+                    <td colSpan="4" className="p-4 text-center text-slate-400">No contact messages yet.</td>
+                  </tr>
                 )}
               </tbody>
             </table>
