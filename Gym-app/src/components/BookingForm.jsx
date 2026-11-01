@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { saveBooking } from "../services/submissionStorage";
+import axios from "axios";
+
 
 const initialFormData = {
     name: '',
     email: '',
-    phone: '',
+    PHONE: '',
     date: '',
     time: '',
     goal: 'weight loss',
@@ -21,18 +23,18 @@ export default function BookingForm() {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
+            await axios.post('/api/bookings', formData);
             saveBooking(formData);
             setSubmitted(true);
             setSubmitError("");
         } catch (error) {
+            setloading(false);
             setSubmitError(error instanceof Error ? error.message : "Unable to save your booking.");
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -44,7 +46,11 @@ export default function BookingForm() {
     return (
         <section id="booking" className="py-24 px-4 max-w-3xl mx-auto">
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 sm:p-12 shadow-2xl">
-                
+                {submitError && (
+                    <div className="mb-6 bg-red-950/50 border border-red-500/50 text-red-300 p-4 rounded-xl text-sm text-center">
+                        {submitError}
+                    </div>
+                )}
                     
                 {submitted ? (
                     <div>

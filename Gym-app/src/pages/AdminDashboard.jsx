@@ -1,66 +1,5 @@
-/*
-import React, { useState } from "react";
-
-export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("bookings");
-  const [bookings, setBookings] = useState([
-    { id: 1, name: "", email: "", phone: "", date: "", time: "" },
-    { id: 2, name: "", email: "", phone: "", date: "", time: "" },
-  ]);
-  const [contacts, setContacts] = useState([]);
-
-  return (
-    <section className="p-6 text-slate-100">
-      <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-
-      <div className="mt-4 flex gap-2">
-        <button
-          type="button"
-          className={`rounded px-3 py-2 ${activeTab === "bookings" ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-200"}`}
-          onClick={() => setActiveTab("bookings")}
-        >
-          Bookings
-        </button>
-        <button
-          type="button"
-          className={`rounded px-3 py-2 ${activeTab === "contacts" ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-200"}`}
-          onClick={() => setActiveTab("contacts")}
-        >
-          Contacts
-        </button>
-      </div>
-
-      <div className="mt-6 rounded-xl bg-slate-900 p-4">
-        {activeTab === "bookings" ? (
-          bookings.length > 0 ? (
-            bookings.map((booking) => (
-              <div key={booking.id} className="mb-3 border-b border-slate-700 pb-2">
-                <p>{booking.name || "New booking"}</p>
-                <p className="text-sm text-slate-400">{booking.date} • {booking.time}</p>
-              </div>
-            ))
-          ) : (
-            <p>No bookings yet.</p>
-          )
-        ) : (
-          contacts.length > 0 ? (
-            contacts.map((contact) => (
-              <div key={contact.id} className="mb-3 border-b border-slate-700 pb-2">
-                <p>{contact.name || "New message"}</p>
-                <p className="text-sm text-slate-400">{contact.email}</p>
-              </div>
-            ))
-          ) : (
-            <p>No contact messages yet.</p>
-          )
-        )}
-      </div>
-    </section>
-  );
-}
-*/
-
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import {
   deleteBooking as removeBooking,
   deleteContact as removeContact,
@@ -68,7 +7,7 @@ import {
   getContacts,
 } from '../services/submissionStorage';
 
-const ADMIN_PASSWORD = '1234';
+const ADMIN_PASSWORD = 'r10253rw';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('bookings');
@@ -180,7 +119,7 @@ return (
           <h1 className="text-3xl font-extrabold mt-1">Admin Dashboard</h1>
           <a href="/" className="mt-2 inline-block text-sm text-amber-400 hover:text-amber-300">Back to website</a>
         </div>
-        <div className="flex space-x-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
+        <div className="flex space-x-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800 w-full justify-center md:justify-end md:w-[400px]">
           <button 
             onClick={() => setActiveTab('bookings')}
             className={`px-6 py-2 rounded-lg font-medium text-sm transition ${activeTab === 'bookings' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-gray-400 hover:text-white'}`}

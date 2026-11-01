@@ -1,5 +1,6 @@
 .title{
     animation: title 1s ease-in-out 100ms 1;
+    animation: bounce 1s ease-in 2s 1;
 }
 @keyframes title {
     0%{

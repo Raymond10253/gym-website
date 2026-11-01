@@ -3,17 +3,14 @@ import React from "react";
 export default function Footer() {
     return (
         <>
-        <footer>
-            <div className="flex justify-between bg-slate-800/50 py-10">
+            <div className="flex justify-between py-10 border-t border-slate-800 text-slate-400 bg-slate-950 px-5">
+                <div className="text-sm uppercase text-amber-500">Fitness club</div>
                 <div>
-
+                    <a href="linkedin.com" className="text-amber-500">
+                       <i className="fa-brands fa-linkedin text-xl"></i> 
+                    </a>
                 </div>
-                <div>
-                    <i className="fa-brand fa-x"></i>
-                </div>
-            </div> 
-        </footer>
-            
+            </div>
         </>
     )
 }

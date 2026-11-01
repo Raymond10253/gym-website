@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import React from 'react';
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import BookingForm from './components/BookingForm'
-import PricingCard from './components/PricingCard'
 import Programs from './pages/Programs'
 import Membership from './components/Membership'
 import Contact from './pages/Contact'
+import Footer from './components/Footer'
+import './styles/App.css'
 
 
 export default function App() {
@@ -23,8 +24,8 @@ export default function App() {
         <Membership />
         <BookingForm />
         <Contact />
+        <Footer />
       </div>
     </>
   )
 }
-

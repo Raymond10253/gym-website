@@ -1,8 +1,11 @@
 import React, { useState } from "react"
 import { saveContact } from "../services/submissionStorage";
+import axios from "axios";
 
 const data = {
-    subject: '',
+    name: '',
+    email: '',
+    PHONE: '',
     message: ''
 };
 
@@ -14,18 +17,18 @@ export default function Contact() {
     const [loading, setLoading] = useState(false);
     const [submitError, setSubmitError] = useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         setLoading(true);
 
         try {
+            await axios.post('/api/contacts', contactData);
             saveContact(contactData);
             setSubmitted(true);
             setSubmitError("");
         } catch (error) {
-            setSubmitError(error instanceof Error ? error.message : "Unable to save your message.");
-        } finally {
             setLoading(false);
+            setSubmitError(error instanceof Error ? error.message : "Unable to save your message.");
         }
     }
 
@@ -38,6 +41,12 @@ export default function Contact() {
         <>
         <section id="contact" className="py-24 px-4 max-w-3xl mx-auto">
             <div className="p-4 bg-slate-900 rounded-3xl border border-slate-800 p-8 sm:p-12 shadow-2xl">
+
+                {submitError && (
+                    <div className="mb-6 bg-red-950/50 border border-red-500/50 text-red-300 p-4 rounded-xl text-sm text-center">
+                        {submitError}
+                    </div>
+                )}
                 {submitted ? (
                     <div>
                         <h3 className="text-md text-green p-3 rounded-xl bg-green/50">Your message about {contactData.subject} has reached us. Kindky wait for a moment we will get back at you.</h3>

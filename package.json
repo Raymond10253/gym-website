@@ -1,0 +1,32 @@
+{
+  "name": "gym-website",
+  "version": "1.0.0",
+  "description": "Full-Stack MERN Gym Website",
+  "main": "server/src/server.js",
+  "scripts": {
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install"
+  },
+  "keywords": [
+    "gym",
+    "mern",
+    "react",
+    "node"
+  ],
+  "author": "Raymond",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Raymond10253/gym-website.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Raymond10253/gym-website/issues"
+  },
+  "homepage": "https://github.com/Raymond10253/gym-website#readme"
+}
