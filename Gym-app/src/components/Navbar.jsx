@@ -113,7 +113,12 @@ export default function Navbar() {
                     >
                         Contact
                     </a>
-                    <a href="/admin" className='block hover:text-amber-600 transition-all duration-500 font-bold uppercase text-amber-400 flex justify-end'>Admin</a>
+                    <a 
+                    href="/admin" 
+                    className='block hover:text-amber-600 transition-all duration-500 font-bold uppercase text-amber-400 flex justify-end'
+                    >
+                        Admin
+                    </a>
                 </div>
             )}
         </nav>
